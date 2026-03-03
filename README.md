@@ -144,3 +144,29 @@ El Developer Agent está diseñado para **automatizar al máximo el proceso de d
 
 </details>
 
+<details>
+<summary><strong>🏗️ Arquitectura</strong></summary>
+
+## 🎯 Visión general de la arquitectura
+
+La arquitectura propuesta está alineada con las tecnologías y dominios evaluados en la prueba: **Node.js / NestJS** para backend, **Next.js App Router** para frontend, **MongoDB** como base de datos principal, integración vía **Mulesoft** y un enfoque fuerte en **estrategia de QA**.
+
+## 📐 Capas y componentes principales
+
+- **Backend (Node.js + NestJS, microservicios)**:  
+  Conjunto de microservicios construidos con NestJS siguiendo principios de **arquitectura limpia**. Existe un **microservicio base** que define convenciones compartidas (logging, manejo de errores, seguridad, conexión a MongoDB, estructura de módulos), y sobre él se construyen **microservicios hijos** que heredan estas bases pero pueden evolucionar de forma independiente según las necesidades de cada dominio de negocio. La **sincronización padre-hijo** se realiza a través de bases comunes de Git, facilitando la actualización y alineación continua entre servicios.
+
+- **Frontend (Next.js App Router, micro frontends)**:  
+  Micrositios construidos sobre Next.js con **App Router** y **Server Components**, organizados como una familia de **micro frontends**. Existe un **repositorio base de frontend** con componentes, estilos, configuraciones y buenas prácticas comunes; a partir de él se crean **sub‑repositorios** que heredan estas bases y se especializan en flujos concretos (como el crédito digital), manteniendo coherencia visual y técnica sin frenar la evolución propia de cada micrositio. De igual forma, la **sincronización padre-hijo** entre el repositorio base y los sub‑repositorios de frontend se gestiona mediante uso transversal de Git, asegurando reutilización y consistencia.
+
+- **Base de datos (MongoDB)**:  
+  Persistencia de la información clave del flujo de crédito sobre MongoDB, modelando los documentos de forma que acompañen el flujo secuencial del crédito digital.  
+
+- **Integración (contratos API + Mulesoft)**:  
+  El sistema se diseña pensando en integrarse con el **Core Bancario vía Mulesoft**, definiendo **contratos de API claros** (request/response). Para la integración en el entorno de desarrollo de Libre Destino, se utiliza un **core-mock** que ya se encuentra implementado y disponible, permitiendo validar la lógica de negocio sin depender del core real.  
+
+- **QA y pruebas**:  
+  Desde el inicio, la arquitectura contempla la implementación de pruebas unitarias utilizando **Jest** para el backend y frontend, y **Playwright** para las pruebas end-to-end. Estas pruebas verifican tanto los módulos individuales como el flujo completo de crédito digital, asegurando la calidad y la robustez de la solución.
+
+</details>
+
