@@ -149,15 +149,13 @@ El Developer Agent está diseñado para **automatizar al máximo el proceso de d
 
 ## 🎯 Visión general de la arquitectura
 
-La arquitectura propuesta está alineada con las tecnologías y dominios evaluados en la prueba: **Node.js / NestJS** para backend, **Next.js App Router** para frontend, **MongoDB** como base de datos principal, integración vía **Mulesoft** y un enfoque fuerte en **estrategia de QA**.
+## 📐 Componentes principales
 
-## 📐 Capas y componentes principales
+- **Arquitectura unificada (Next.js fullstack)**:  
+  Tanto el backend como el frontend han sido desarrollados únicamente con **Next.js**, aprovechando su naturaleza de framework fullstack que permite construir APIs, lógica de backend (incluyendo conexión a bases de datos, autenticación, middlewares y manejo de errores) y frontend reactivo bajo un mismo ecosistema.  
+  > **Nota**: aunque la prueba sugiere el uso de Nest.js para backend, me tomé el atrevimiento de unificar la implementación solo con Next.js, ya que este framework cubre las necesidades tanto de servidor como de cliente y permite arquitecturas serverless y microservicios sin perder buenas prácticas de organización, escalabilidad ni seguridad.
 
-- **Backend (Node.js + NestJS, microservicios)**:  
-  Conjunto de microservicios construidos con NestJS siguiendo principios de **arquitectura limpia**. Existe un **microservicio base** que define convenciones compartidas (logging, manejo de errores, seguridad, conexión a MongoDB, estructura de módulos), y sobre él se construyen **microservicios hijos** que heredan estas bases pero pueden evolucionar de forma independiente según las necesidades de cada dominio de negocio. La **sincronización padre-hijo** se realiza a través de bases comunes de Git, facilitando la actualización y alineación continua entre servicios.
-
-- **Frontend (Next.js App Router, micro frontends)**:  
-  Micrositios construidos sobre Next.js con **App Router** y **Server Components**, organizados como una familia de **micro frontends**. Existe un **repositorio base de frontend** con componentes, estilos, configuraciones y buenas prácticas comunes; a partir de él se crean **sub‑repositorios** que heredan estas bases y se especializan en flujos concretos (como el crédito digital), manteniendo coherencia visual y técnica sin frenar la evolución propia de cada micrositio. De igual forma, la **sincronización padre-hijo** entre el repositorio base y los sub‑repositorios de frontend se gestiona mediante uso transversal de Git, asegurando reutilización y consistencia.
+  La organización general contempla la separación por dominios y módulos cuando es necesario, integración directa con MongoDB desde el backend (API routes/Server Actions), y el desarrollo de micro frontends sobre la misma base de Next.js, reutilizando componentes y estilos. La sincronización y evolución entre distintos sitos o contextos del producto se facilita mediante Git y convenciones reutilizables comunes para todo el stack.
 
 - **Base de datos (MongoDB)**:  
   Persistencia de la información clave del flujo de crédito sobre MongoDB, modelando los documentos de forma que acompañen el flujo secuencial del crédito digital.  
@@ -167,6 +165,87 @@ La arquitectura propuesta está alineada con las tecnologías y dominios evaluad
 
 - **QA y pruebas**:  
   Desde el inicio, la arquitectura contempla la implementación de pruebas unitarias utilizando **Jest** para el backend y frontend, y **Playwright** para las pruebas end-to-end. Estas pruebas verifican tanto los módulos individuales como el flujo completo de crédito digital, asegurando la calidad y la robustez de la solución.
+
+## Estrategia de generalización y sincronización (Transversal git)
+
+El sistema se organiza en torno a un repositorio padre de orquestación (`manager`), un repositorio base compartido (`base`) y múltiples repositorios hijos por característica. `manager` coordina los flujos de trabajo entre `base` y los repos hijos, mientras que `base` define la estructura y los contratos que los hijos implementan o extienden.
+
+- **manager**  
+  - Contiene los scripts y el CLI (`cli.sh`) para operar sobre todos los repos hijos y sobre `base` de forma unificada.  
+  - Expone comandos para:
+    - Configurar git en los microservicios/repos hijos.
+    - Traer cambios desde `base` a los hijos.
+    - Preparar y validar incrementos de funcionalidad.
+    - Enviar cambios a los repos remotos.
+    - Limpiar ramas auxiliares de trabajo.
+
+- **base (repo base)**  
+  - Es el **repositorio raíz** del que derivan las demás implementaciones.  
+  - Define:
+    - Estructura base de carpetas.
+    - Configuración compartida (linter, tooling, CI, etc., según se defina en el proyecto).
+    - Módulos, contratos e interfaces que deberán respetar los repos hijos.
+  - Funciona como **fuente de verdad**: los cambios relevantes en la arquitectura o en la base de código se realizan aquí y luego se propagan a los hijos.
+
+- **Repos hijos por característica**
+  - Cada repo representa una **implementación específica** (microservicio, feature o contexto de negocio).  
+  - Viven en la **misma ubicación** que `base` dentro de `manager`.  
+  - Se sincronizan regularmente con `base` utilizando los comandos provistos por el manager.  
+  - Pueden:
+    - Extender la lógica del base.
+    - Sobrescribir ciertas partes según la necesidad de la característica.
+
+Esta organización sigue un enfoque de **multi-repo con un repo base común**, donde `manager` actúa como capa de gestión y automatización.
+
+---
+
+## Estructura de `base`
+
+A alto nivel, el repositorio base se organiza así:
+
+- **Raíz de `base`**  
+  - `app/` → aplicación Next.js (rutas, páginas y API).  
+  - `src/` → capa de dominio y utilidades compartidas (config, módulos, servicios, schemas, etc.).  
+  - `tests/` → pruebas (por ejemplo, Playwright u otras herramientas de testing).  
+  - Archivos de configuración: `middleware.ts`, `next.config.js`, `tsconfig*.json`, `vercel.json`, `package*.json`, `playwright.config.ts`, etc.
+
+- **Front / UI (`app/`)**  
+  - `app/(public)/` → páginas públicas (por ejemplo login).  
+  - `app/(private)/` → páginas privadas tras autenticación:
+    - `app/(private)/layout.tsx` → layout privado común.
+    - `app/(private)/home/` → página principal interna.
+    - `app/(private)/status/`, `app/(private)/users/`, etc. → páginas por entidad/módulo.  
+  - `app/components/` → componentes de UI compartidos.  
+  - `app/config/` → configuración accesible desde el cliente (por ejemplo estáticos, rutas de cliente, etc.).  
+  - `app/lib/` → utilidades específicas del front.
+
+- **API / Back (`app/api/`)**  
+  - Directorios por entidad o contexto, por ejemplo:
+    - `app/api/auth/...`
+    - `app/api/status/health/route.ts`
+    - `app/api/users/...`  
+  - Cada ruta `route.ts`:
+    - Importa `AppHandler` desde `src/config/app-handler/app-handler`.  
+    - Importa `STATICS_CONFIG` (roles, etc.) desde `app/config/statics`.  
+    - Importa schemas de entrada y salida desde `src/modules/[entidad]/schemas`.  
+    - Llama a un servicio en `src/modules/[entidad]/services`.
+
+- **Capa de dominio (`src/`)**  
+  - `src/config/`  
+    - `app-handler/` → `AppHandler` y utilidades asociadas (validación, manejo de errores, respuesta estándar, etc.).  
+    - `statics/` → configuración estática compartida (roles, constantes, etc.).  
+    - Otros helpers de configuración (`app-error.ts`, `response.ts`, etc.).  
+  - `src/modules/`  
+    - Directorios por módulo/entidad (por ejemplo `auth`, `general`, `status`, `users`).  
+    - Dentro de cada módulo:
+      - `schemas/` → zod schemas / DTOs / modelos para entrada y salida.  
+      - `services/` → servicios de dominio (casos de uso / lógica de negocio).  
+      - `repository/` (cuando aplique) → acceso a datos / integración con la persistencia.  
+  - `src/lib/` → utilidades compartidas a nivel de dominio.
+
+- **Tests (`tests/`)**  
+  - Estructura alineada con módulos y/o flujos críticos de negocio.  
+  - Integrado con `playwright.config.ts` para pruebas end-to-end cuando sea necesario.
 
 </details>
 
