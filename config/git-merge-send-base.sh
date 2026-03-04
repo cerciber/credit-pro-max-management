@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Cargar logs
-source ./logs.sh
+source ./config/logs.sh
 
 # Imprimir mensaje de inicio
 log "white" "GIT MERGE SEND BASE: Enviando cambios del cliente al repositorio base"
@@ -19,13 +19,9 @@ cd $1
 log "blue" "Cambiando a la rama feat/new-base-changes" 1
 command "git checkout feat/new-base-changes" 2
 
-# Traer los cambios del upstream main
+# Asegurar que tenemos la última referencia de upstream/main
 log "blue" "Obteniendo cambios del upstream main" 1
 command "git fetch upstream main" 2
-
-# Mezclar los cambios del upstream main en la rama base
-log "blue" "Mergeando cambios del upstream main en feat/new-base-changes" 1
-command "git merge upstream/main --no-edit" 2
 
 # Validar estructura de los cambios
 log "blue" "Validando estructura de los cambios" 1

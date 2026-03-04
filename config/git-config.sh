@@ -12,7 +12,7 @@ source ./load-env.sh
 # Filtrar microservicios según los parámetros proporcionados
 source ./config/filter-microservices.sh "$@"
 
-log "blue" "Configurando Git en cerciber-manager..." 1
+log "blue" "Configurando Git..." 1
 
 # Configurar usuario local
 git config user.name "$GIT_USER_NAME"

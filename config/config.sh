@@ -1,3 +1,29 @@
 MICROSERVICES=(
     "credit-pro-max-base"
+    "credit-pro-max-app-shell"
+)
+
+BASE_SYNC_RULES=(
+    "."
+    "!app/(private)"
+    "!app/(public)"
+    "!app/api"
+    "!src/modules"
+    "!app/config/client"
+    "!src/config/statics/client"
+    "!package-lock.json"
+    "!package.client.json"
+    "app/(private)/components"
+    "app/(private)/home"
+    "app/(private)/status"
+    "app/(private)/users"
+    "app/(private)/layout.tsx"
+    "app/(public)/login"
+    "app/api/auth"
+    "app/api/status"
+    "app/api/users"
+    "src/modules/auth"
+    "src/modules/general"
+    "src/modules/status"
+    "src/modules/users"
 )

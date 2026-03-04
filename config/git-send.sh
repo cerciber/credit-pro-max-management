@@ -6,39 +6,6 @@ source ./config/logs.sh
 # Cargar variables de entorno
 source ./config/load-env.sh
 
-# Función para mostrar ayuda
-show_help() {
-    # Cargar configuración para mostrar microservicios disponibles
-    source ./config/config.sh
-    
-    log "white" "GIT SEND - Enviar cambios al repositorio remoto"
-    log "cyan" "Uso: git-send <microservicio> \"mensaje del commit\""
-    log "cyan" "Descripción:"
-    log "yellow" "  Este comando ejecuta PRIMERO las pruebas de extremo a extremo (si están disponibles)," 1
-    log "yellow" "  y solo si pasan, procede con git add, git commit y git push." 1
-    log "cyan" "Parámetros:"
-    log "yellow" "  microservicio       - Microservicio específico (obligatorio)" 1
-    log "yellow" "  mensaje del commit  - Mensaje obligatorio para el commit" 1
-    log "cyan" "Microservicios disponibles:"
-    for service in "${MICROSERVICES[@]}"; do
-        log "yellow" "  $service" 1
-    done
-    log "cyan" "Ejemplos:"
-    log "yellow" "  git-send cerciber-base \"feat: agregar nueva funcionalidad\"" 1
-    log "yellow" "  git-send cerciber-admn \"fix: corregir bug crítico\"" 1
-    log "yellow" "  git-send cerciber-landing \"docs: actualizar documentación\"" 1
-    log "white" ""
-    log "red" "NOTA: El mensaje del commit debe estar entre comillas."
-    log "cyan" "NOTA: Si el microservicio tiene un script 'test:webserver' en package.json,"
-    log "yellow" "      se ejecutarán las pruebas de extremo a extremo AL INICIO del proceso." 1
-}
-
-# Verificar si se solicita ayuda
-if [[ "$1" == "help" || "$1" == "-h" || "$1" == "--help" ]]; then
-    show_help
-    exit 0
-fi
-
 # Verificar que se proporcionen ambos parámetros
 if [ -z "$1" ]; then
     log "red" "Error: Debes proporcionar un microservicio."

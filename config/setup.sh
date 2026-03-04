@@ -5,9 +5,12 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-REPOS=(
-  "https://github.com/cerciber/credit-pro-max-base.git"
-)
+source ./config/config.sh
+
+REPOS=()
+for SERVICE in "${MICROSERVICES[@]}"; do
+  REPOS+=("https://github.com/cerciber/${SERVICE}.git")
+done
 
 echo "==> Raíz del proyecto: $ROOT_DIR"
 
@@ -23,6 +26,8 @@ for REPO_URL in "${REPOS[@]}"; do
   if [ -f "$NAME/package.json" ]; then
     echo "==> Instalando dependencias en '$NAME' con npm i..."
     (cd "$NAME" && npm i)
+    echo "==> Instalando navegadores de Playwright en '$NAME'..."
+    (cd "$NAME" && npx playwright install)
   else
     echo "==> No se encontró package.json en '$NAME', se omite instalación de dependencias."
   fi

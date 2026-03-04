@@ -46,44 +46,98 @@ if condition "git remote | grep -q upstream" 2; then
 else
     log "gray" "El remoto upstream no existe" 2
     log "blue" "Agregando remoto upstream" 2
-    command "git remote add upstream https://github.com/cerciber/cerciber-base.git" 3
+    command "git remote add upstream https://github.com/cerciber/credit-pro-max-base.git" 3
 fi
 
 # Obtener cambios del repositorio base
 log "blue" "Obteniendo cambios del repositorio base" 1
 command "git fetch upstream" 2
 
-# Crear rama feat/base-changes con cambios del base
-log "blue" "Creando rama feat/base-changes con la versión exacta del base" 1
-command "git checkout -b feat/base-changes upstream/main" 2
-
-# Subir rama feat/base-changes al repositorio
-log "blue" "Subiendo rama feat/base-changes al remoto" 1
-command "git push -u origin feat/base-changes" 2
-
-# Obtener cambios de main
+# Obtener cambios de main del repo actual
 log "blue" "Actualizando cambios del repo actual" 1
 command "git fetch origin main" 2
 
-# Mergear cambios de main a feat/base-changes
-log "blue" "Mergeando cambios del repo actual en feat/base-changes" 1
-if condition "git merge origin/main --no-edit" 2; then
-    # Merge exitoso, verificar si hay conflictos
-    if git status --porcelain | grep -q "^UU\|^AA\|^DD"; then
-        log "yellow" "Se detectaron conflictos en el merge" 1
-        log "gray" "Debes resolver los conflictos manualmente antes de continuar" 2
-        log "gray" "Una vez resueltos los conflictos, ejecuta" 2
-        log "yellow" "git-merge-base $1" 3
-    else
-        # No hay conflictos, ejecutar automáticamente git-merge-base
-        log "green" "Se creó correctamente la rama feat/base-changes con los cambios del base integrados en el repo actual" 1
-        log "blue" "Ejecutando automáticamente git-merge-base $1" 2
-        cd .. && ./config/git-merge-base.sh $1
+# Crear rama feat/base-changes basada en main del repo actual
+log "blue" "Creando rama feat/base-changes desde origin/main" 1
+command "git checkout -b feat/base-changes origin/main" 2
+
+# Verificar si una ruta coincide con una regla (archivo exacto o contenido dentro de carpeta)
+matches_rule_path() {
+    local file="$1"
+    local rule_path="$2"
+
+    if [ "$rule_path" = "." ]; then
+        return 0
     fi
+
+    if [ "$file" = "$rule_path" ] || [[ "$file" == "$rule_path/"* ]]; then
+        return 0
+    fi
+
+    return 1
+}
+
+# Determinar si un archivo debe sincronizarse según BASE_SYNC_RULES
+# Reglas:
+# - include: "ruta"
+# - exclude: "!ruta"
+# - última coincidencia gana
+should_sync_file() {
+    local file="$1"
+    local include=false
+    local rule action rule_path
+
+    for rule in "${BASE_SYNC_RULES[@]}"; do
+        if [[ "$rule" == !* ]]; then
+            action="exclude"
+            rule_path="${rule:1}"
+        else
+            action="include"
+            rule_path="$rule"
+        fi
+
+        if matches_rule_path "$file" "$rule_path"; then
+            if [ "$action" = "include" ]; then
+                include=true
+            else
+                include=false
+            fi
+        fi
+    done
+
+    if [ "$include" = true ]; then
+        return 0
+    fi
+    return 1
+}
+
+# Aplicar sync de archivos diferentes entre origin/main y upstream/main según reglas
+log "blue" "Aplicando diferencias permitidas de upstream/main sobre feat/base-changes" 1
+while IFS= read -r SYNC_FILE; do
+    if [ -n "$SYNC_FILE" ] && should_sync_file "$SYNC_FILE"; then
+        if git cat-file -e "upstream/main:$SYNC_FILE" 2>/dev/null; then
+            command "git checkout upstream/main -- \"$SYNC_FILE\"" 2 false
+        else
+            command "git rm -f -- \"$SYNC_FILE\"" 2 false
+        fi
+    fi
+done < <(git diff --name-only origin/main upstream/main)
+
+# Staging de todos los cambios aplicados desde upstream
+log "blue" "Agregando cambios aplicados al staging" 1
+command "git add -A" 2
+
+# Commit solo si hay cambios
+log "blue" "Creando commit con los cambios del base (si aplica)" 1
+if ! condition "git diff --cached --quiet" 2; then
+    command "git commit -m \"feat: sync upstream base changes\"" 2
+    log "green" "Se creó correctamente feat/base-changes con cambios del upstream" 1
 else
-    # Merge falló
-    log "yellow" "Se encontraron conflictos en el merge" 1
-    log "gray" "Revisa los conflictos y resuélvelos manualmente" 2
-    log "gray" "Cuando estes listo para mandar los cambios al base, ejecuta" 2
-    log "magenta" "git-merge-base $1" 3
+    log "gray" "No hay diferencias entre origin/main y upstream/main" 2
 fi
+
+# Subir rama feat/base-changes al remoto
+log "blue" "Subiendo rama feat/base-changes al remoto" 1
+command "git push -u origin feat/base-changes" 2
+
+log "green" "Proceso completado. Revisa feat/base-changes y continúa con git-merge-base cuando estés listo." 1
