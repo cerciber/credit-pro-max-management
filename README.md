@@ -4,7 +4,7 @@
 
 Soy Cesar Torres, candidato al rol de Líder Técnico en el Banco Caja Social. Este proyecto nace como parte de la **Prueba Técnica – Proceso de Selección Interno BCS – Líder Técnico Backend, Frontend y Liderazgo Técnico Integral**, y busca demostrar mediante un **caso de uso de credito digital** mi capacidad para diseñar y liderar soluciones end-to-end en un contexto bancario realista.  
 
-Este caso de uso está pensado para demostrar cómo, utilizando agentes de inteligencia artifical y otra estrategias, es posible empezar a orquestar y automatizar de manera controlada el ciclo de vida del desarrollo de software. Esto no solo asegura mejores resultados en los equipos, sino que también permite enfocar los esfuerzos en lo que realmente importa: **la generación de valor**. 💎
+Este caso de uso está pensado para demostrar cómo, utilizando agentes de inteligencia artifical y otras estrategias, es posible empezar a orquestar y automatizar de manera controlada el ciclo de vida del desarrollo de software. Esto no solo asegura mejores resultados en los equipos, sino que también permite enfocar los esfuerzos en lo que realmente importa: **la generación de valor**. 💎
 
 <details>
 <summary><strong>🧩 Necesidad y propuesta</strong></summary>
@@ -60,14 +60,11 @@ Por el lado de las pruebas, hoy contamos con unitarias y buena cobertura, pero e
 
 Este sistema modela un **flujo de crédito digital preaprobado simplificado** del Banco Caja Social, pensado específicamente para créditos de libre inversión. La experiencia se organiza en una serie de vistas secuenciales que guían al cliente de forma clara y controlada a lo largo de todo el proceso:
 
-- **Sign-in**: punto de entrada donde el usuario se identifica como cliente del banco y puede iniciar su experiencia de crédito digital.  
-- **Login**: autenticación segura del cliente para acceder a la información de su preaprobado y a sus datos básicos.  
+- **Login**: punto de entrada donde el usuario se identifica como cliente del banco y se autentica de forma segura para acceder a la información de su preaprobado y a sus datos básicos, dando inicio a la experiencia de crédito digital.  
 - **Personalizar oferta**: espacio donde el cliente ajusta monto, plazo y condiciones dentro de los rangos permitidos por su preaprobación.  
 - **Cuentas**: selección o confirmación de la cuenta donde se realizará el desembolso y desde donde se gestionarán los pagos.  
-- **Beneficiarios**: registro y validación de beneficiarios que participarán en la operación, cuando aplique.  
-- **Aceptar oferta**: revisión final de términos y condiciones, simulaciones y desglose de la obligación, con la aceptación explícita del cliente.  
-- **Firmar pagaré**: proceso de firma electrónica del pagaré y de los documentos legales asociados al crédito.  
-- **OTC**: validaciones adicionales (por ejemplo, controles operativos y de seguridad) necesarias antes de habilitar el desembolso.  
+- **Beneficiarios**: registro y validación de beneficiarios que participarán en la operación, cuando aplique.   
+- **Legalización**: proceso de firma electrónica del pagaré y de los documentos legales asociados al crédito.   
 - **Finalización**: pantalla de cierre donde se confirma el resultado de la solicitud y se entregan los siguientes pasos o canales de soporte.  
 
 El propósito de este flujo es que un usuario, partiendo de una preaprobación, pueda **solicitar y formalizar un crédito de libre inversión 100% digital**, con todos los pasos necesarios para autenticarse, adaptar su oferta, definir dónde se gestionará el desembolso, registrar beneficiarios, aceptar condiciones, firmar electrónicamente los documentos requeridos y completar la operación de manera segura.

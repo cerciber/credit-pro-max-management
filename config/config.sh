@@ -1,6 +1,10 @@
 MICROSERVICES=(
     "credit-pro-max-base"
     "credit-pro-max-app-shell"
+    "credit-pro-max-offer"
+    "credit-pro-max-account"
+    "credit-pro-max-beneficiary"
+    "credit-pro-max-legalization"
 )
 
 BASE_SYNC_RULES=(
